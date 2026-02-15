@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfirmasi DT Kembali - Transport System Jotun</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 font-['Inter'] flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+
+        <h1 class="text-2xl font-black text-gray-800 mb-1">Transport System Jotun</h1>
+        <p class="text-sm text-gray-400 mb-8">Konfirmasi Pengembalian Dokumen (DT)</p>
+
+        <div id="loading" class="animate-pulse space-y-3">
+            <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+            <div class="h-10 bg-gray-200 rounded w-full"></div>
+        </div>
+
+        <div id="formContainer" class="hidden text-left space-y-6">
+            
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center relative overflow-hidden">
+                <i class="fas fa-file-invoice text-blue-200 text-6xl absolute -bottom-2 -right-2 opacity-50"></i>
+                
+                <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Nomor DT (Surat Jalan)</p>
+                <h2 id="displayDT" class="text-3xl font-black text-blue-900 break-words">...</h2>
+                
+                <div class="mt-4 pt-4 border-t border-blue-200/50">
+                    <p class="text-xs font-bold text-gray-400 uppercase">Armada / Plat Nomor</p>
+                    <p id="displayPlat" class="text-lg font-bold text-gray-700">...</p>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="confirmReturn()" id="btnConfirm" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transform transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-check-circle"></i> KONFIRMASI DT KEMBALI
+                </button>
+                <p class="text-xs text-gray-400 text-center mt-3">
+                    *Klik tombol ini jika fisik Surat Jalan (DT) sudah diterima Admin.
+                </p>
+            </div>
+        </div>
+
+        <div id="successState" class="hidden text-center py-8 animate-fade-in">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-4xl text-green-600"></i>
+            </div>
+            <h2 class="text-2xl font-black text-gray-800">Berhasil!</h2>
+            <p class="text-gray-500 mt-2">Status dokumen sudah tercatat <br><span class="font-bold text-green-600">KEMBALI / DITERIMA</span></p>
+            <p id="timestampSuccess" class="text-xs text-gray-400 mt-4 font-mono"></p>
+        </div>
+
+        <p class="text-[10px] text-gray-300 mt-8">Logistics System Transport System Jotun © 2026</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Konfigurasi Firebase Kamu
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7aqBfuhB618yiO9Ss1sXmirNZOGMgCoo",
+            authDomain: "status-pengiriman.firebaseapp.com",
+            projectId: "status-pengiriman",
+            storageBucket: "status-pengiriman.firebasestorage.app",
+            messagingSenderId: "642881748809",
+            appId: "1:642881748809:web:af8719db3a37e731d6e498"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Ambil ID dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
+
+        async function loadData() {
+            if (!docId) {
+                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Link tidak valid atau kadaluarsa.</p>';
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, "deliveries", docId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Cek jika sudah dikonfirmasi sebelumnya
+                    if (data.statusDT === "KEMBALI") {
+                        showSuccess(data.tanggalBalikDT);
+                    } else {
+                        // Tampilkan Data
+                        document.getElementById('displayDT').innerText = data.nomorDT || "-";
+                        document.getElementById('displayPlat').innerText = data.plat || "-";
+                        
+                        // Buka Form
+                        document.getElementById('loading').classList.add('hidden');
+                        document.getElementById('formContainer').classList.remove('hidden');
+                    }
+                } else {
+                    document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Data pengiriman tidak ditemukan.</p>';
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Gagal memuat data. Periksa koneksi internet.");
+            }
+        }
+
+        window.confirmReturn = async () => {
+            const btn = document.getElementById('btnConfirm');
+            
+            if(!confirm("Yakin konfirmasi bahwa fisik DT sudah diterima kembali?")) return;
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            try {
+                const now = new Date().toISOString();
+                
+                // Update ke Firebase
+                await updateDoc(doc(db, "deliveries", docId), {
+                    statusDT: "KEMBALI",
+                    tanggalBalikDT: now
+                });
+                
+                showSuccess(now);
+
+            } catch (error) {
+                console.error("Error update:", error);
+                alert("Terjadi kesalahan: " + error.message);
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> GAGAL - COBA LAGI';
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        };
+
+        function showSuccess(timestamp) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
+            
+            const dateObj = new Date(timestamp);
+            document.getElementById('timestampSuccess').innerText = 
+                `Waktu: ${dateObj.toLocaleDateString('id-ID')} - ${dateObj.toLocaleTimeString('id-ID')}`;
+        }
+
+        // Jalankan saat halaman dibuka
+        loadData();
+    </script>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+</html>
