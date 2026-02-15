@@ -30,6 +30,11 @@
                 <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Plat Nomor</label>
                 <input type="text" id="inputPlat" placeholder="B 1234 ABC" class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500">
             </div>
+            <div>
+    <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nama Customer - Daerah</label>
+    <input type="text" id="inputCustomer" placeholder="Contoh: Mitra 10 Karawang" 
+           class="w-full bg-gray-50 border border-gray-200 rounded-xl p-3 font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500">
+</div>
           <div>
     <label class="block text-xs font-bold text-gray-400 uppercase mb-2">Nomor DT (Bisa banyak, pisahkan dengan koma)</label>
     <textarea id="inputDT" placeholder="Contoh: 17522, 17566, 17588" 
@@ -99,15 +104,16 @@ window.setStatus = (status, el) => {
 window.submitData = async () => {
     const vendor = document.getElementById('inputVendor').value;
     const plat = document.getElementById('inputPlat').value;
+    // 1. AMBIL VALUE CUSTOMER
+    const customer = document.getElementById('inputCustomer').value; 
     const nomorDT = document.getElementById('inputDT').value;
     const note = document.getElementById('inputNote').value;
     const fotoFile = document.getElementById('inputFoto').files[0];
     const btn = document.getElementById('sendBtn');
 
-    // 1. Validasi dasar
-    if(!vendor || !plat || !currentStatus) return alert("Lengkapi data!");
+    // 2. VALIDASI (Pastikan customer juga diisi)
+    if(!vendor || !plat || !customer || !currentStatus) return alert("Lengkapi data termasuk Customer!");
 
-    // 2. Validasi Khusus: Jika status 'Selesai', wajib upload foto
     if (currentStatus === 'Selesai' && !fotoFile) {
         return alert("Tolong lampirkan bukti pengiriman ya bapa - bapa ! :)");
     }
@@ -117,7 +123,6 @@ window.submitData = async () => {
 
     let fotoBase64 = "";
 
-    // Konversi foto ke Base64 (Teks) agar bisa tampil tanpa Storage
     if (fotoFile) {
         fotoBase64 = await new Promise((resolve) => {
             const reader = new FileReader();
@@ -140,10 +145,12 @@ window.submitData = async () => {
     }
 
     try {
+        // 3. SIMPAN KE FIREBASE
         await addDoc(collection(db, "deliveries"), {
             vendor, 
             plat, 
-            nomorDT: nomorDT || "-", // Simpan Nomor DT ke Firestore
+            customer: customer, // Data baru masuk sini
+            nomorDT: nomorDT || "-", 
             status: currentStatus, 
             note, 
             foto: fotoBase64, 
