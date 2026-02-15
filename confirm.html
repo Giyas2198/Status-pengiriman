@@ -1,117 +1,67 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Transport Monitoring</title>
+    <title>Konfirmasi DT Kembali - Transport System Jotun</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        .sidebar-gradient { background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%); }
-        .detail-box { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
-        .detail-box.active { max-height: 800px; opacity: 1; margin-bottom: 2rem; }
-        .card-active { ring: 4px solid #93c5fd; transform: scale(1.02); }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
-<body class="bg-slate-50 font-sans text-gray-800">
+<body class="bg-gray-50 font-['Inter'] flex items-center justify-center min-h-screen p-4">
 
-    <div class="flex h-screen overflow-hidden">
-        <aside class="w-64 sidebar-gradient text-white flex flex-col shadow-2xl z-30">
-            <div class="p-6 border-b border-blue-400/30">
-                <div class="flex items-center space-x-3">
-                    <div class="bg-white p-2 rounded-lg text-blue-600 shadow-md">
-                        <i class="fas fa-truck-loading fa-lg"></i>
-                    </div>
-                    <span class="text-xl font-bold tracking-tight">Daily Transport</span>
-                </div>
-            </div>
-            <nav class="flex-1 px-4 py-6 space-y-2">
-                <a href="#" class="flex items-center space-x-3 bg-white/10 px-4 py-3 rounded-xl border border-white/20">
-                    <i class="fas fa-th-large w-5"></i>
-                    <span>Dashboard</span>
-                </a>
-            </nav>
-            <div class="p-6 border-t border-blue-400/30 text-xs text-blue-100 italic">
-                Hi Jotun Team! Keep Fight Ya! <br> © 2026 giyas Logistics Ops
-            </div>
-        </aside>
+    <div class="bg-white max-w-lg w-full rounded-3xl shadow-2xl p-8 text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
 
-        <main class="flex-1 flex flex-col overflow-y-auto">
-            <header class="bg-white shadow-sm px-8 py-4 flex justify-between items-center sticky top-0 z-20">
-                <h1 class="font-bold text-xl text-blue-900 tracking-tight">Monitoring Status</h1>
+        <h1 class="text-2xl font-black text-gray-800 mb-1">Transport System Jotun</h1>
+        <p class="text-sm text-gray-400 mb-8">Konfirmasi Pengembalian Dokumen (DT)</p>
+
+        <div id="loading" class="animate-pulse space-y-3">
+            <div class="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+            <div class="h-10 bg-gray-200 rounded w-full"></div>
+        </div>
+
+        <div id="formContainer" class="hidden text-left space-y-6">
+            
+            <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100 text-center relative overflow-hidden">
+                <i class="fas fa-file-invoice text-blue-200 text-6xl absolute -bottom-2 -right-2 opacity-50"></i>
                 
-                <div class="flex items-center space-x-2">
-                    <button id="btnExportHeader" class="hidden text-[10px] bg-green-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-green-700 shadow-sm transition">
-                        <i class="fas fa-file-excel mr-1"></i> EXCEL
-                    </button>
-                    <button id="btnBlastEmail" class="hidden text-[10px] bg-blue-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-blue-700 shadow-sm transition">
-                        <i class="fas fa-paper-plane mr-1"></i> BLAST ALL
-                    </button>
-                    <button id="btnCustomEmail" class="hidden text-[10px] bg-purple-600 text-white px-3 py-2 rounded-lg font-bold hover:bg-purple-700 shadow-sm transition">
-                        <i class="fas fa-envelope mr-1"></i> CUSTOM SEND
-                    </button>
-
-                    <div class="text-right ml-4">
-                        <select id="vendorFilter" class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg p-1 font-bold focus:ring-2 focus:ring-blue-500 outline-none w-40">
-                            <option value="All">Semua Vendor</option>
-                            <option value="Respek">Respek</option>
-                            <option value="Wira">Wira</option>
-                            <option value="Fesa">Fesa</option>
-                            <option value="Humala">Humala</option>
-                            <option value="Matio">Matio</option>
-                            <option value="Sinergi">Sinergi</option>
-                            <option value="Tam">Tam</option>
-                            <option value="Yas">Yas</option>
-                            <option value="Kms">Kms</option>
-                            <option value="Tangguh Jaya Pratama">Tangguh Jaya Pratama</option>
-                        </select>
-                    </div>
-                    <button onclick="logout()" class="text-[10px] bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold">LOGOUT</button>
-                </div>
-            </header>
-
-            <div class="p-8">
-                <div class="mb-6">
-                    <h2 class="text-2xl font-black text-gray-800">Dashboard <span id="vendorTitle" class="text-blue-600">Semua Vendor</span></h2>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div onclick="toggleDetail('Antri Muat', this)" class="cursor-pointer bg-blue-600 p-6 rounded-2xl shadow-lg text-white hover:bg-blue-700 transition-all">
-                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest">Antri Muat</p>
-                        <h3 class="text-4xl font-black mt-1" id="valAntri">0</h3>
-                    </div>
-                    <div onclick="toggleDetail('Otw Customer', this)" class="cursor-pointer bg-emerald-500 p-6 rounded-2xl shadow-lg text-white hover:bg-emerald-600 transition-all">
-                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest">Otw Customer</p>
-                        <h3 class="text-4xl font-black mt-1" id="valOtw">0</h3>
-                    </div>
-                    <div onclick="toggleDetail('Antri Bongkar', this)" class="cursor-pointer bg-amber-500 p-6 rounded-2xl shadow-lg text-white hover:bg-amber-600 transition-all">
-                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest">Antri Bongkar</p>
-                        <h3 class="text-4xl font-black mt-1" id="valBongkar">0</h3>
-                    </div>
-                    <div onclick="toggleDetail('Selesai', this)" class="cursor-pointer bg-rose-500 p-6 rounded-2xl shadow-lg text-white hover:bg-rose-600 transition-all">
-                        <p class="text-xs font-bold opacity-80 uppercase tracking-widest">Selesai</p>
-                        <h3 class="text-4xl font-black mt-1" id="valSelesai">0</h3>
-                    </div>
-                </div>
-
-                <div id="detailContainer" class="detail-box">
-                    <div class="bg-white border-l-8 border-blue-600 shadow-xl rounded-xl p-6 relative">
-                        <button onclick="closeDetail()" class="absolute top-4 right-4 text-gray-300 hover:text-red-500"><i class="fas fa-times-circle fa-lg"></i></button>
-                        <h4 id="detailTitle" class="font-black text-xl text-gray-800 mb-4 border-b pb-2">Detail Data</h4>
-                        <ul id="detailList" class="grid grid-cols-1 md:grid-cols-2 gap-4"></ul>
-                    </div>
+                <p class="text-xs font-bold text-blue-400 uppercase tracking-widest mb-1">Nomor DT (Surat Jalan)</p>
+                <h2 id="displayDT" class="text-3xl font-black text-blue-900 break-words">...</h2>
+                
+                <div class="mt-4 pt-4 border-t border-blue-200/50">
+                    <p class="text-xs font-bold text-gray-400 uppercase">Armada / Plat Nomor</p>
+                    <p id="displayPlat" class="text-lg font-bold text-gray-700">...</p>
                 </div>
             </div>
-        </main>
+
+            <div class="pt-2">
+                <button onclick="confirmReturn()" id="btnConfirm" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transform transition active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-check-circle"></i> KONFIRMASI DT KEMBALI
+                </button>
+                <p class="text-xs text-gray-400 text-center mt-3">
+                    *Klik tombol ini jika fisik Surat Jalan (DT) sudah diterima Admin.
+                </p>
+            </div>
+        </div>
+
+        <div id="successState" class="hidden text-center py-8 animate-fade-in">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check text-4xl text-green-600"></i>
+            </div>
+            <h2 class="text-2xl font-black text-gray-800">Berhasil!</h2>
+            <p class="text-gray-500 mt-2">Status dokumen sudah tercatat <br><span class="font-bold text-green-600">KEMBALI / DITERIMA</span></p>
+            <p id="timestampSuccess" class="text-xs text-gray-400 mt-4 font-mono"></p>
+        </div>
+
+        <p class="text-[10px] text-gray-300 mt-8">Logistics System Transport System Jotun © 2026</p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, query, onSnapshot, where, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // Konfigurasi Firebase Kamu
         const firebaseConfig = {
             apiKey: "AIzaSyB7aqBfuhB618yiO9Ss1sXmirNZOGMgCoo",
             authDomain: "status-pengiriman.firebaseapp.com",
@@ -123,171 +73,95 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        const auth = getAuth(app);
 
-        let allDeliveries = [];
-        let userRole = "";
+        // Ambil ID dari URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const docId = urlParams.get('id');
 
-        // 1. Cek Auth & Set Tombol
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDoc = await getDoc(doc(db, "Users", user.uid));
-                if (userDoc.exists()) {
-                    userRole = userDoc.data().Role;
-                    if (userRole === 'editor' || userRole === 'admin') {
-                        ['btnExportHeader', 'btnBlastEmail', 'btnCustomEmail'].forEach(id => {
-                            const el = document.getElementById(id);
-                            if(el) el.classList.remove('hidden');
-                        });
-                        document.getElementById('btnExportHeader').onclick = () => exportToExcel();
-                        document.getElementById('btnBlastEmail').onclick = () => sendEmail('blast');
-                        document.getElementById('btnCustomEmail').onclick = () => sendEmail('custom');
-                    }
-                    listenUpdates();
-                }
+        // ... (Firebase Config tetap sama)
+
+async function loadData() {
+    if (!docId) {
+        document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Link tidak valid.</p>';
+        return;
+    }
+    
+    try {
+        const docRef = doc(db, "deliveries", docId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            // Pastikan pengecekan status konsisten dengan yang di-update
+            if (data.statusDT === "KEMBALI") {
+                showSuccess(data.tanggalBalikDT);
             } else {
-                window.location.href = 'login.html';
+                document.getElementById('displayDT').innerText = data.nomorDT || "-";
+                document.getElementById('displayPlat').innerText = data.plat || "-";
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('formContainer').classList.remove('hidden');
             }
-        });
-
-        // 2. Monitoring Real-time
-        function listenUpdates(vendor = 'All') {
-            let q = collection(db, "deliveries");
-            if (vendor !== 'All') q = query(q, where("vendor", "==", vendor));
-
-            onSnapshot(q, (snapshot) => {
-                allDeliveries = [];
-                const counts = { 'Antri Muat': 0, 'Otw Customer': 0, 'Antri Bongkar': 0, 'Selesai': 0 };
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    allDeliveries.push({ ...data, id: doc.id });
-                    if (counts[data.status] !== undefined) counts[data.status]++;
-                });
-                document.getElementById('valAntri').innerText = counts['Antri Muat'];
-                document.getElementById('valOtw').innerText = counts['Otw Customer'];
-                document.getElementById('valBongkar').innerText = counts['Antri Bongkar'];
-                document.getElementById('valSelesai').innerText = counts['Selesai'];
-            });
+        } else {
+            document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Data tidak ditemukan di database.</p>';
         }
+    } catch (error) {
+        console.error("Firestore Error:", error);
+        document.getElementById('loading').innerHTML = `<p class="text-red-500 text-xs">Error: ${error.message}</p>`;
+    }
+}
+        window.confirmReturn = async () => {
+            const btn = document.getElementById('btnConfirm');
+            
+            if(!confirm("Yakin konfirmasi bahwa fisik DT sudah diterima kembali?")) return;
 
-        // 3. Export Excel
-        window.exportToExcel = () => {
-            if (allDeliveries.length === 0) return alert("Data kosong!");
-            const reportData = allDeliveries.map((item, index) => ({
-                "No": index + 1,
-                "Tanggal": item.timestamp ? new Date(item.timestamp.seconds * 1000).toLocaleString('id-ID') : "-",
-                "Vendor": item.vendor,
-                "Plat Nomor": item.plat,
-                "Nomor DT": item.nomorDT || "-",
-                "Status": item.status,
-                "Catatan": item.note || "-"
-            }));
-            const ws = XLSX.utils.json_to_sheet(reportData);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Laporan");
-            XLSX.writeFile(wb, `Rekap_Daily_Transport_${new Date().toLocaleDateString()}.xlsx`);
-        };
-
-        // 4. Kirim Email (Blast/Custom)
-        window.sendEmail = async (mode) => {
-            if (allDeliveries.length === 0) return alert("Data kosong!");
-            let targetEmail = (mode === 'custom') ? prompt("Masukkan email tujuan:") : "";
-            if (mode === 'custom' && !targetEmail) return;
-
-            if (!confirm("Kirim data sekarang?")) return;
-
-            // GANTI URL DI BAWAH DENGAN URL DEPLOY GAS TERBARU KAMU
-            const GAS_URL = "https://script.google.com/macros/s/AKfycbxGf_M9pOr-AfngV10dC3MGn39R1sGIvIaANa7f9q8Uc_1IHBpDArBNsDGiRPg6uwE/exec";
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> MEMPROSES...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
 
             try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ mode, target: targetEmail, data: allDeliveries })
+                const now = new Date().toISOString();
+                
+                // Update ke Firebase
+                await updateDoc(doc(db, "deliveries", docId), {
+                    statusDT: "KEMBALI",
+                    tanggalBalikDT: now
                 });
-                alert("Selesai! Cek folder Terkirim di Gmail.");
-            } catch (e) { alert("Error: " + e.message); }
+                
+                showSuccess(now);
+
+            } catch (error) {
+                console.error("Error update:", error);
+                alert("Terjadi kesalahan: " + error.message);
+                btn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> GAGAL - COBA LAGI';
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
         };
 
-// Fungsi Menampilkan Detail Data
-window.toggleDetail = (status, el) => {
-    // 1. Atur Tampilan Kartu Aktif
-    document.querySelectorAll('.grid > div').forEach(c => c.classList.remove('card-active'));
-    el.classList.add('card-active');
-
-    // 2. Filter Data Sesuai Status yang Diklik
-    const filtered = allDeliveries.filter(d => d.status === status);
-    
-    // 3. Update Judul Detail
-    document.getElementById('detailTitle').innerText = `Detail: ${status}`;
-
-    // 4. Render List Data (Disini bagian pentingnya)
-    const list = document.getElementById('detailList');
-    
-    list.innerHTML = filtered.map((item, i) => `
-        <li class="p-4 bg-slate-50 rounded-xl border border-gray-100 flex flex-col shadow-sm transition hover:shadow-md">
+        function showSuccess(timestamp) {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('formContainer').classList.add('hidden');
+            document.getElementById('successState').classList.remove('hidden');
             
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="font-bold text-blue-900 uppercase text-lg">${item.plat}</p>
-                    <p class="text-xs font-bold text-amber-600">No DT: ${item.nomorDT || '-'}</p>
-                </div>
-                <span class="text-[10px] bg-gray-200 px-2 py-1 rounded font-bold text-gray-500">${item.vendor}</span>
-            </div>
+            const dateObj = new Date(timestamp);
+            document.getElementById('timestampSuccess').innerText = 
+                `Waktu: ${dateObj.toLocaleDateString('id-ID')} - ${dateObj.toLocaleTimeString('id-ID')}`;
+        }
 
-            ${item.statusDT === 'KEMBALI' ? 
-                `<div class="mt-3 bg-green-100 border border-green-200 p-2 rounded-lg text-center">
-                    <p class="text-[10px] text-green-700 font-black uppercase"><i class="fas fa-check-circle"></i> DT SUDAH KEMBALI</p>
-                    <p class="text-[9px] text-green-600 mt-1">
-                       Diterima: ${item.tanggalBalikDT ? new Date(item.tanggalBalikDT).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', hour: '2-digit', minute:'2-digit'}) : '-'}
-                    </p>
-                 </div>` 
-                : 
-                `<div class="mt-3 bg-red-50 border border-red-100 p-2 rounded-lg text-center opacity-80">
-                    <p class="text-[10px] text-red-400 font-bold uppercase"><i class="fas fa-clock"></i> DT BELUM KEMBALI</p>
-                 </div>`
-            }
-
-            <p class="text-[11px] text-gray-500 italic mt-3 border-t border-gray-200 pt-2">
-                Catatan: "${item.note || 'Tidak ada catatan'}"
-            </p>
-
-            ${userRole === 'editor' ? 
-                `<button onclick="deleteData('${item.id}')" class="w-full mt-3 py-2 text-red-500 text-[10px] font-bold border border-red-200 rounded hover:bg-red-50 transition">
-                    <i class="fas fa-trash"></i> HAPUS DATA
-                </button>` : ''
-            }
-
-            ${item.foto ? 
-                `<div class="mt-3">
-                    <p class="text-[9px] text-gray-400 mb-1">Bukti Foto:</p>
-                    <img src="${item.foto}" class="w-full h-32 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90" onclick="window.open(this.src)">
-                 </div>` : ''
-            }
-
-        </li>
-    `).join(''); // <--- PENTING: .join('') ada di sini, SETELAH penutup </li>
-
-    // 5. Munculkan Container Detail
-    document.getElementById('detailContainer').classList.add('active');
-};
-
-        window.deleteData = async (id) => {
-            if (confirm("Hapus data?")) {
-                await deleteDoc(doc(db, "deliveries", id));
-                alert("Berhasil!");
-                window.closeDetail();
-            }
-        };
-
-        window.closeDetail = () => document.getElementById('detailContainer').classList.remove('active');
-        window.logout = () => { if(confirm("Logout?")) signOut(auth).then(() => window.location.href='login.html'); };
-        
-        document.getElementById('vendorFilter').addEventListener('change', (e) => {
-            document.getElementById('vendorTitle').innerText = e.target.value === 'All' ? 'Semua Vendor' : e.target.value;
-            listenUpdates(e.target.value);
-            window.closeDetail();
-        });
+        // Jalankan saat halaman dibuka
+        loadData();
     </script>
+
+    <style>
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+    </style>
 </body>
 </html>
