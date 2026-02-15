@@ -78,40 +78,39 @@
         const urlParams = new URLSearchParams(window.location.search);
         const docId = urlParams.get('id');
 
-        async function loadData() {
-            if (!docId) {
-                document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Link tidak valid atau kadaluarsa.</p>';
-                return;
-            }
-            
-            try {
-                const docRef = doc(db, "deliveries", docId);
-                const docSnap = await getDoc(docRef);
+        // ... (Firebase Config tetap sama)
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
+async function loadData() {
+    if (!docId) {
+        document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Link tidak valid.</p>';
+        return;
+    }
+    
+    try {
+        const docRef = doc(db, "deliveries", docId);
+        const docSnap = await getDoc(docRef);
 
-                    // Cek jika sudah dikonfirmasi sebelumnya
-                    if (data.statusDT === "KEMBALI") {
-                        showSuccess(data.tanggalBalikDT);
-                    } else {
-                        // Tampilkan Data
-                        document.getElementById('displayDT').innerText = data.nomorDT || "-";
-                        document.getElementById('displayPlat').innerText = data.plat || "-";
-                        
-                        // Buka Form
-                        document.getElementById('loading').classList.add('hidden');
-                        document.getElementById('formContainer').classList.remove('hidden');
-                    }
-                } else {
-                    document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Data pengiriman tidak ditemukan.</p>';
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Gagal memuat data. Periksa koneksi internet.");
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+
+            // Pastikan pengecekan status konsisten dengan yang di-update
+            if (data.statusDT === "KEMBALI") {
+                showSuccess(data.tanggalBalikDT);
+            } else {
+                document.getElementById('displayDT').innerText = data.nomorDT || "-";
+                document.getElementById('displayPlat').innerText = data.plat || "-";
+                
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('formContainer').classList.remove('hidden');
             }
+        } else {
+            document.getElementById('loading').innerHTML = '<p class="text-red-500 font-bold">Data tidak ditemukan di database.</p>';
         }
-
+    } catch (error) {
+        console.error("Firestore Error:", error);
+        document.getElementById('loading').innerHTML = `<p class="text-red-500 text-xs">Error: ${error.message}</p>`;
+    }
+}
         window.confirmReturn = async () => {
             const btn = document.getElementById('btnConfirm');
             
