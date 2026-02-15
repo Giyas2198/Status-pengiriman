@@ -224,16 +224,20 @@ window.toggleDetail = (status, el) => {
     // 4. Render List Data (Disini bagian pentingnya)
     const list = document.getElementById('detailList');
     
-    list.innerHTML = filtered.map((item, i) => `
-        <li class="p-4 bg-slate-50 rounded-xl border border-gray-100 flex flex-col shadow-sm transition hover:shadow-md">
-            
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="font-bold text-blue-900 uppercase text-lg">${item.plat}</p>
-                    <p class="text-xs font-bold text-amber-600">No DT: ${item.nomorDT || '-'}</p>
+list.innerHTML = filtered.map((item, i) => `
+    <li class="p-4 bg-slate-50 rounded-xl border border-gray-100 flex flex-col shadow-sm transition hover:shadow-md">
+        
+        <div class="flex justify-between items-start">
+            <div>
+                <p class="font-bold text-blue-900 uppercase text-lg">${item.plat}</p>
+                <p class="text-xs font-bold text-amber-600">No DT: ${item.nomorDT || '-'}</p>
+                
+                <p class="text-xs font-bold text-gray-500 mt-1">
+                    <i class="fas fa-map-marker-alt mr-1"></i> ${item.customer || '-'}
+                </p>
                 </div>
-                <span class="text-[10px] bg-gray-200 px-2 py-1 rounded font-bold text-gray-500">${item.vendor}</span>
-            </div>
+            <span class="text-[10px] bg-gray-200 px-2 py-1 rounded font-bold text-gray-500">${item.vendor}</span>
+        </div
 
             ${item.statusDT === 'KEMBALI' ? 
                 `<div class="mt-3 bg-green-100 border border-green-200 p-2 rounded-lg text-center">
