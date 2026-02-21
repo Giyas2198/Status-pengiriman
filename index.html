@@ -220,26 +220,47 @@
             XLSX.writeFile(wb, `Rekap_Daily_Transport_${new Date().toLocaleDateString()}.xlsx`);
         };
 
-        // 4. Kirim Email (Blast/Custom)
-        window.sendEmail = async (mode) => {
-            if (allDeliveries.length === 0) return alert("Data kosong!");
-            let targetEmail = (mode === 'custom') ? prompt("Masukkan email tujuan:") : "";
-            if (mode === 'custom' && !targetEmail) return;
+// 4. Kirim Email (Blast/Custom) dengan Fitur CC Fleksibel
+window.sendEmail = async (mode) => {
+    if (allDeliveries.length === 0) return alert("Data kosong!");
+    
+    // Tentukan Target Utama
+    let targetEmail = (mode === 'custom') ? prompt("Masukkan email TUJUAN utama:") : "";
+    if (mode === 'custom' && !targetEmail) return;
 
-            if (!confirm("Kirim data sekarang?")) return;
+    // Tambahan Fitur CC Fleksibel
+    let ccEmail = prompt("Masukkan email CC (pisahkan dengan koma jika banyak) / Kosongkan untuk default:", "");
 
-            // GANTI URL DI BAWAH DENGAN URL DEPLOY GAS TERBARU KAMU
-            const GAS_URL = "https://script.google.com/macros/s/AKfycbzbPTfLaW1nGK_wqYqioVK05kBZWaprmEYSFFPz49G7IjRN3Guc4Q_wrqeUg2Kt3Euw/exec";
+    if (!confirm(`Kirim data sekarang?\nTarget: ${mode === 'blast' ? 'Masing-masing Vendor' : targetEmail}\nCC: ${ccEmail || 'Default Admin'}`)) return;
 
-            try {
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({ mode, target: targetEmail, data: allDeliveries })
-                });
-                alert("Selesai! Cek folder Terkirim di Gmail.");
-            } catch (e) { alert("Error: " + e.message); }
-        };
+    // Gunakan URL GAS kamu
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbygcD0TH1EwB8cMTrOVLX2RRwv14s933wms_Z_eZQEU0XK74nDNIKFDluk1N670eqpb/exec";
+
+    try {
+        // Tampilkan loading sederhana
+        const btnId = mode === 'custom' ? 'btnCustomEmail' : 'btnBlastEmail';
+        const originalText = document.getElementById(btnId).innerHTML;
+        document.getElementById(btnId).innerHTML = '<i class="fas fa-spinner fa-spin"></i> MENGIRIM...';
+        document.getElementById(btnId).disabled = true;
+
+        await fetch(GAS_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify({ 
+                mode, 
+                target: targetEmail, 
+                cc: ccEmail, // Mengirim data CC ke GAS
+                data: allDeliveries 
+            })
+        });
+
+        alert("Selesai! Email telah dikirim ke antrean sistem.");
+        document.getElementById(btnId).innerHTML = originalText;
+        document.getElementById(btnId).disabled = false;
+    } catch (e) { 
+        alert("Error: " + e.message); 
+    }
+};
 
 // Fungsi Menampilkan Detail Data
 // Fungsi Menampilkan Detail Data dengan Fitur Scroll
@@ -324,6 +345,7 @@ window.toggleDetail = (status, el) => {
     </script>
 </body>
 </html>
+
 
 
 
