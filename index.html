@@ -11,7 +11,10 @@
     <style>
         .sidebar-gradient { background: linear-gradient(180deg, #2563eb 0%, #1e40af 100%); }
         .detail-box { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); max-height: 0; overflow: hidden; opacity: 0; }
-        .detail-box.active { max-height: 800px; opacity: 1; margin-bottom: 2rem; }
+        .detail-box.active {max-height: 80vh; /* Membatasi tinggi detail maksimal 80% tinggi layar agar tidak tenggelam */
+         opacity: 1; margin-bottom: 2rem; overflow-y: auto; /* PENTING: Mengaktifkan scroll vertikal jika data banyak */
+         padding-right: 10px; /* Memberi ruang untuk scrollbar */ 
+        }
         .card-active { ring: 4px solid #93c5fd; transform: scale(1.02); }
     </style>
 </head>
@@ -290,4 +293,5 @@ window.toggleDetail = (status, el) => {
     </script>
 </body>
 </html>
+
 
