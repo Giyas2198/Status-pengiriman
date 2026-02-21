@@ -234,7 +234,7 @@ window.sendEmail = async (mode) => {
     if (!confirm(`Kirim data sekarang?\nTarget: ${mode === 'blast' ? 'Masing-masing Vendor' : targetEmail}\nCC: ${ccEmail || 'Default Admin'}`)) return;
 
     // Gunakan URL GAS kamu
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzH2R5K26pLk2xpyF-46gj-g9Q9x0RxVYH_ZJRQNbe64IyvSk8HHlo4R927OD-kDGr8/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwZQO3o7z2iio5h72MZQixo3P3GnkCwUNmfoyZ08AhpDLb6Q_wdRrQCAEn8P79yqpo/exec";
 
     try {
         // Tampilkan loading sederhana
@@ -345,6 +345,7 @@ window.toggleDetail = (status, el) => {
     </script>
 </body>
 </html>
+
 
 
 
